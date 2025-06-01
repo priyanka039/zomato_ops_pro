@@ -5,14 +5,11 @@
   "dependencies": {
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
-    "@headlessui/react": "^1.7.17",
-    "@heroicons/react": "^2.0.18",
+    "@heroicons/react": "^1.0.6",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.0",
     "@reduxjs/toolkit": "^1.9.5",
     "axios": "^1.4.0",
-    "clsx": "^2.0.0",
-    "date-fns": "^2.30.0",
     "framer-motion": "^12.15.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -20,8 +17,6 @@
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.11.1",
     "react-scripts": "5.0.1",
-    "socket.io-client": "^4.7.2",
-    "tailwindcss": "^3.3.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

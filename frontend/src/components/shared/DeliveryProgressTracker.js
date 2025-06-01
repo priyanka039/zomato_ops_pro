@@ -2,76 +2,106 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckIcon } from '@heroicons/react/outline';
 
-const steps = [
-  { key: 'PREP', label: 'Preparing', icon: '👨‍🍳', message: 'Chef is working magic!' },
-  { key: 'PICKED', label: 'Picked Up', icon: '📦', message: 'Got it! On my way!' },
-  { key: 'ON_ROUTE', label: 'On Route', icon: '🏍️', message: 'Zooming through traffic!' },
-  { key: 'DELIVERED', label: 'Delivered', icon: '✅', message: 'Mission accomplished! 🎉' }
-];
+const DeliveryProgressTracker = ({ currentStatus, onUpdateStatus }) => {
+  const steps = [
+    { key: 'PREP', label: 'Preparing', icon: '👨‍🍳', message: 'Chef is working magic!' },
+    { key: 'PICKED', label: 'Picked Up', icon: '📦', message: 'Got the package!' },
+    { key: 'ON_ROUTE', label: 'On Route', icon: '🏍️', message: 'Zooming through traffic!' },
+    { key: 'DELIVERED', label: 'Delivered', icon: '✅', message: 'Mission accomplished!' }
+  ];
 
-const getCurrentStepIndex = (status) => {
-  return steps.findIndex(step => step.key === status);
-};
+  const getCurrentStepIndex = () => {
+    return steps.findIndex(step => step.key === currentStatus);
+  };
 
-const getNextActionText = (status) => {
-  switch (status) {
-    case 'PREP':
-      return 'Pick Up Order';
-    case 'PICKED':
-      return 'Start Delivery';
-    case 'ON_ROUTE':
-      return 'Mark as Delivered';
-    default:
-      return 'Update Status';
-  }
-};
+  const getNextStatus = () => {
+    const currentIndex = getCurrentStepIndex();
+    return currentIndex < steps.length - 1 ? steps[currentIndex + 1].key : null;
+  };
 
-const DeliveryProgressTracker = ({ currentStatus, orderId, onUpdateStatus }) => {
-  const currentIndex = getCurrentStepIndex(currentStatus);
+  const getNextActionText = () => {
+    const nextStatus = getNextStatus();
+    if (!nextStatus) return '';
+
+    const actions = {
+      'PICKED': 'Pick Up Order',
+      'ON_ROUTE': 'Start Delivery',
+      'DELIVERED': 'Complete Delivery'
+    };
+    return actions[nextStatus];
+  };
 
   return (
     <div className="space-y-4">
-      {steps.map((step, index) => (
+      {steps.map((step, index) => {
+        const isCompleted = getCurrentStepIndex() > index;
+        const isCurrent = getCurrentStepIndex() === index;
+        const isUpcoming = getCurrentStepIndex() < index;
+
+        return (
+          <div key={step.key} className="flex items-center space-x-4">
+            <motion.div
+              initial={false}
+              animate={{
+                backgroundColor: isCompleted || isCurrent ? '#10B981' : '#E5E7EB',
+                scale: isCurrent ? 1.1 : 1
+              }}
+              className={`w-12 h-12 rounded-full flex items-center justify-center text-lg shadow-md ${
+                isCompleted || isCurrent ? 'text-white' : 'text-gray-400'
+              }`}
+            >
+              {isCompleted ? (
+                <CheckIcon className="w-6 h-6" />
+              ) : (
+                <span className={isUpcoming ? 'opacity-50' : ''}>{step.icon}</span>
+              )}
+            </motion.div>
+            
+            <div className="flex-1">
+              <motion.p
+                initial={false}
+                animate={{
+                  color: isCompleted ? '#10B981' : isCurrent ? '#111827' : '#6B7280'
+                }}
+                className="font-semibold"
+              >
+                {step.label}
+              </motion.p>
+              <motion.p
+                initial={false}
+                animate={{
+                  opacity: isUpcoming ? 0.5 : 1
+                }}
+                className="text-sm text-gray-600"
+              >
+                {step.message}
+              </motion.p>
+            </div>
+
+            {isCurrent && getNextStatus() && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onUpdateStatus(getNextStatus())}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
+              >
+                {getNextActionText()}
+              </motion.button>
+            )}
+          </div>
+        );
+      })}
+
+      {currentStatus === 'DELIVERED' && (
         <motion.div
-          key={step.key}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className={`flex items-center space-x-4 ${
-            currentIndex >= index ? 'opacity-100' : 'opacity-40'
-          }`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-6 text-center"
         >
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg ${
-            currentIndex >= index 
-              ? 'bg-green-500 text-white' 
-              : 'bg-gray-200 text-gray-500'
-          }`}>
-            {step.icon}
-          </div>
-          <div className="flex-1">
-            <p className="font-semibold">{step.label}</p>
-            <p className="text-sm text-gray-600">{step.message}</p>
-          </div>
-          {currentIndex > index && (
-            <CheckIcon className="w-6 h-6 text-green-500" />
-          )}
+          <div className="text-4xl mb-2">🎉</div>
+          <p className="text-green-600 font-medium">Delivery completed successfully!</p>
+          <p className="text-sm text-gray-600">Great job! Ready for the next one?</p>
         </motion.div>
-      ))}
-      
-      {currentStatus !== 'DELIVERED' && onUpdateStatus && (
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => {
-            const nextStep = steps[currentIndex + 1];
-            if (nextStep) {
-              onUpdateStatus(orderId, nextStep.key);
-            }
-          }}
-          className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
-        >
-          {getNextActionText(currentStatus)}
-        </motion.button>
       )}
     </div>
   );
